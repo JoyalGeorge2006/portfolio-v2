@@ -65,22 +65,59 @@ button{font:inherit}
   background:rgba(255,255,255,.92);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-bottom:1px dashed var(--line);
-  /* notch / status-bar safe area */
-  padding-top:env(safe-area-inset-top,0px);
+  padding-top:0;
+}
+/* Notch / status-bar safe area — only when installed as an app (PWA / fullscreen).
+   In a normal browser tab safe-area-inset-top must not add blank space above the bar. */
+@media (display-mode:standalone),(display-mode:fullscreen){
+  .topbar{padding-top:env(safe-area-inset-top,0px)}
 }
 .topbar-inner{
   width:100%;max-width:var(--content);margin-inline:auto;
   padding-inline:max(var(--gutter),env(safe-area-inset-left),env(safe-area-inset-right));
-  min-height:56px;padding-block:8px;
-  display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;
+  min-height:56px;padding-block:6px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:nowrap;
+  position:relative;
 }
-.brand{font-weight:750;letter-spacing:-.04em;flex:none;font-size:18px;line-height:1}
+.brand{font-weight:750;letter-spacing:-.04em;flex:none;font-size:18px;line-height:1;min-height:44px;display:inline-flex;align-items:center}
+.menu-btn{
+  display:none;flex:none;width:44px;height:44px;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;
+  align-items:center;justify-content:center;flex-direction:column;gap:5px;touch-action:manipulation;
+}
+.menu-btn span{display:block;width:18px;height:2px;border-radius:2px;background:#171717;transition:transform .2s,opacity .2s}
+.topbar.open .menu-btn span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.topbar.open .menu-btn span:nth-child(2){opacity:0}
+.topbar.open .menu-btn span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 .nav{
-  display:flex;align-items:center;gap:clamp(10px,2.5vw,18px);
-  flex-wrap:wrap;row-gap:6px;color:#666;font-size:14px;min-width:0;
+  display:flex;align-items:center;gap:4px;
+  flex-wrap:nowrap;white-space:nowrap;color:#555;font-size:14.5px;min-width:0;
 }
-.nav a{white-space:nowrap;padding:8px 2px;line-height:1.2}
-.nav a:hover{color:#111}
+.nav a{white-space:nowrap;padding:10px 12px;line-height:1.2;flex:none;border-radius:8px;min-height:44px;display:inline-flex;align-items:center}
+.nav a:hover{color:#111;background:#f4f6f9}
+
+/* ===== Mobile nav: hamburger + dropdown panel ===== */
+@media(max-width:640px){
+  html{scroll-padding-top:52px}
+  .topbar-inner{min-height:44px;padding-block:0}
+  .brand{min-height:40px;font-size:17px}
+  .menu-btn{display:inline-flex;width:40px;height:40px;border-radius:9px;gap:4px}
+  .menu-btn span{width:16px}
+  .topbar.open .menu-btn span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  .topbar.open .menu-btn span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+  .nav{
+    display:none;
+    position:absolute;top:100%;left:0;right:0;
+    flex-direction:column;align-items:stretch;gap:0;
+    background:#fff;border-bottom:1px solid var(--line);
+    padding:6px max(var(--gutter),env(safe-area-inset-left),env(safe-area-inset-right)) 8px;
+    box-shadow:0 18px 30px rgba(0,0,0,.10);
+    white-space:normal;
+  }
+  .topbar.open .nav{display:flex}
+  .nav a{font-size:15px;padding:10px 10px;min-height:44px;color:#222}
+  .nav a:hover{background:#f4f6f9}
+  .hero-banner{height:clamp(104px,26vw,200px);margin-top:8px}
+}
 
 .hero-banner{
   height:clamp(140px,20vw,200px);
@@ -94,7 +131,12 @@ button{font:inherit}
   background-image:image-set(url('assets/img/hero-960.webp') type('image/webp') 1x,url('assets/img/hero-960.jpg') type('image/jpeg') 1x);
   background-size:cover;background-position:center;background-repeat:no-repeat;
 }
-.hero-banner::after{display:none}
+.hero-banner::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size:160px 160px;background-repeat:repeat;
+  opacity:.38;mix-blend-mode:overlay;
+}
 .profile{padding:24px 4px 10px;min-width:0}
 .profile-top{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 .avatar{
@@ -189,12 +231,12 @@ h2{font-size:clamp(19px,3vw,22px);margin:0;letter-spacing:-.02em}
 .date{grid-column:2;text-align:left;color:#888;font-size:13px}
 .notes{display:grid;gap:0;border-top:1px solid var(--line)}
 .note{
-  padding:18px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:6px 20px;
-  transition:.18s;flex-wrap:wrap;min-width:0;
+  padding:13px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px 12px;
+  transition:.18s;flex-wrap:nowrap;min-width:0;
 }
 a.note:hover{background:#fafafa;padding-left:8px;padding-right:8px}
-.note strong{font-size:16px;min-width:0;overflow-wrap:anywhere;flex:1 1 200px}
-.note span{font-size:13px;color:#999;flex:none}
+.note strong{font-size:15px;line-height:1.4;min-width:0;overflow-wrap:anywhere;flex:1 1 auto}
+.note span{font-size:12.5px;color:#999;flex:none;white-space:nowrap}
 .contact{
   text-align:center;padding:clamp(40px,10vw,70px) clamp(16px,5vw,24px) clamp(32px,8vw,45px);margin-top:22px;
   margin-bottom:max(22px,env(safe-area-inset-bottom,22px));
@@ -207,10 +249,15 @@ a.note:hover{background:#fafafa;padding-left:8px;padding-right:8px}
   background-image:var(--contact-img);
   background-image:image-set(url('assets/img/contact-960.webp') type('image/webp') 1x,url('assets/img/contact-960.jpg') type('image/jpeg') 1x);
   background-size:cover;background-position:center;background-repeat:no-repeat;
-  filter:blur(20px) saturate(1.2);
-  transform:scale(1.25);
+  filter:blur(34px) saturate(1.35) brightness(1.02);
+  transform:scale(1.4);
 }
-.contact::after{display:none}
+.contact::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size:160px 160px;background-repeat:repeat;
+  opacity:.38;mix-blend-mode:overlay;
+}
 .contact h2,.contact p,.contact .actions{position:relative;z-index:1}
 .contact h2{font-size:clamp(28px,7vw,46px);line-height:1.1;margin:0 0 12px;text-wrap:balance;overflow-wrap:anywhere;letter-spacing:-.03em}
 .contact p{color:#000;font-size:clamp(14px,3.5vw,17px);margin:0 auto 20px;max-width:56ch;overflow-wrap:anywhere}
@@ -222,22 +269,30 @@ footer{
   padding-bottom:max(34px,env(safe-area-inset-bottom));
   color:#aaa;font-size:12px;display:flex;justify-content:space-between;gap:6px 16px;flex-wrap:wrap;
 }
-/* Render-path: skip offscreen work until scrolled to */
-#stack,#notes,.contact,footer{content-visibility:auto;contain-intrinsic-size:auto 600px}
+/* Render-path: skip offscreen work until scrolled to — keep placeholders small so mobile doesn't show big gaps.
+   NOTE: footer is excluded — giving it an intrinsic size reserves a tall blank gap above it. */
+#stack,.contact{content-visibility:auto;contain-intrinsic-size:auto 400px}
+#notes{content-visibility:auto;contain-intrinsic-size:auto 180px}
 
 /* ===== Small phones: keep everything reachable, no overflow ===== */
 @media(max-width:480px){
+  html{scroll-padding-top:56px}
   .page{--gutter:10px}
   .profile{padding:14px 2px 8px}
-  .note{flex-direction:column;align-items:flex-start;gap:2px}
-  footer{display:flex;flex-direction:column;gap:4px}
+  .section{padding:24px 0}
+  .section-title{margin-bottom:10px}
+  .note{flex-wrap:nowrap;flex-direction:row;align-items:center;gap:8px;padding:12px 0}
+  .note strong{font-size:14.5px}
+  .note span{font-size:12px}
+  .contact{margin-bottom:12px}
+  footer{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:4px 10px;padding:14px 0 calc(16px + env(safe-area-inset-bottom,0px));font-size:11.5px}
+  footer span{white-space:nowrap}
 }
 
 /* ===== Very small / foldables (≤360px, Galaxy Fold etc.) ===== */
 @media(max-width:380px){
   body{font-size:15px}
   .topbar-inner{gap:6px}
-  .nav{font-size:13px;gap:10px}
   .actions .btn{width:100%;flex:1 1 100%}
   .project-body{padding:16px 14px 14px}
   .contact .actions .btn{flex:1 1 100%;max-width:none;width:100%}
@@ -334,10 +389,11 @@ footer{
 </style>
 </head>
 <body>
-  <header class="topbar">
+  <header class="topbar" id="topbar">
     <div class="topbar-inner">
       <a class="brand" href="#">JG.</a>
-      <nav class="nav" aria-label="Primary">
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="primaryNav" aria-label="Open menu"><span></span><span></span><span></span></button>
+      <nav class="nav" id="primaryNav" aria-label="Primary">
         <a href="#projects">Projects</a>
         <a href="#notes">Notes</a>
         <a href="#stack">Stack</a>
@@ -467,5 +523,32 @@ footer{
   </footer>
 </div>
 
+<script>
+(function(){
+  var topbar = document.getElementById('topbar');
+  var btn = document.getElementById('menuBtn');
+  if(!topbar || !btn) return;
+  function setOpen(open){
+    topbar.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function(){
+    setOpen(!topbar.classList.contains('open'));
+  });
+  topbar.querySelectorAll('.nav a').forEach(function(a){
+    a.addEventListener('click', function(){ setOpen(false); });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') setOpen(false);
+  });
+  document.addEventListener('click', function(e){
+    if(topbar.classList.contains('open') && !topbar.contains(e.target)) setOpen(false);
+  });
+  window.addEventListener('resize', function(){
+    if(window.innerWidth > 640) setOpen(false);
+  }, {passive:true});
+})();
+</script>
 </body>
 </html>
